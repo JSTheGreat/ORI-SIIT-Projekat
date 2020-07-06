@@ -11,7 +11,7 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-from game import Agent
+from game import Agent, Directions
 from searchProblems import PositionSearchProblem
 
 import util
