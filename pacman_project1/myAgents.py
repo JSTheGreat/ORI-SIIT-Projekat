@@ -38,7 +38,30 @@ class MyAgent(Agent):
 
         "*** YOUR CODE HERE ***"
 
-        raise NotImplementedError()
+        global pocetak
+        global kraj
+        global ukupnoHrana
+
+        if not pocetak:
+            ukupnoHrana = state.getNumFood()
+            #print(ukupnoHrana)
+            pocetak = True
+
+        if len(self.akcije) > 0:
+            sledecaAkcija = self.akcije[0]
+            del self.akcije[0]
+            return sledecaAkcija
+        else: # ako se zavrsila pronadjena putanja nadji novu
+            if kraj == False:
+                problem = AnyFoodSearchProblem(state, self.index)
+                self.akcije = search.bfs(problem)
+                sledecaAkcija = self.akcije[0]
+                del self.akcije[0]
+                return sledecaAkcija
+            else:
+                return Directions.STOP
+            
+        #raise NotImplementedError()
 
     def initialize(self):
         """
@@ -49,7 +72,18 @@ class MyAgent(Agent):
 
         "*** YOUR CODE HERE"
 
-        raise NotImplementedError()
+        self.akcije = []
+
+        global pocetak
+        pocetak = False
+
+        global kraj
+        kraj = False
+
+        global pojedenaHrana
+        pojedenaHrana = []
+
+        #raise NotImplementedError()
 
 """
 Put any other SearchProblems or search methods below. You may also import classes/methods in
@@ -107,8 +141,23 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x,y = state
 
+        #return self.food[state[0][0]][state[0][1]]
+        global pojedenaHrana
+        global ukupnoHrana
+        global kraj
+
+        x, y = state
+
+        if self.food[x][y]  and state not in pojedenaHrana : #naisao na hranu koja nije pojedena
+            pojedenaHrana.append((x, y)) #pojedi
+            #print(pojedenaHrana)
+            if len(pojedenaHrana) == ukupnoHrana:
+                #print("kraj")
+                kraj = True #pojedena sva hrana
+            return True
+        else:
+            return False
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
 
