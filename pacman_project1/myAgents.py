@@ -23,7 +23,7 @@ IMPORTANT
 `agent` defines which agent you will use. By default, it is set to ClosestDotAgent,
 but when you're ready to test your own agent, replace it with MyAgent
 """
-def createAgents(num_pacmen, agent='ClosestDotAgent'):
+def createAgents(num_pacmen, agent='MyAgent'):
     return [eval(agent)(index=i) for i in range(num_pacmen)]
 
 class MyAgent(Agent):
@@ -89,7 +89,16 @@ class MyAgent(Agent):
 Put any other SearchProblems or search methods below. You may also import classes/methods in
 search.py and searchProblems.py. (ClosestDotAgent as an example below)
 """
-
+class Node():
+    def __init__(self,stanje,prethodno):
+        self.pozicija = stanje[0]
+        self.akcija = stanje[1]
+        if prethodno is not None:
+            self.g = 0.579 + prethodno.g
+        else:
+            self.g = 0
+        self.prethodno = prethodno
+        
 class ClosestDotAgent(Agent):
 
     def findPathToClosestDot(self, gameState):
@@ -102,6 +111,54 @@ class ClosestDotAgent(Agent):
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState, self.index)
+        "*** YOUR CODE HERE ***"
+        #print("Start:", problem.getStartState())
+
+        pq = util.PriorityQueue()
+
+        food = food.asList()
+        min = 1000
+        najbliza = food[0]
+        for hrana in food:
+            if abs(startPosition[0] - hrana[0]) + abs(startPosition[1] - hrana[1]) < min:
+                min = abs(startPosition[0] - hrana[0]) + abs(startPosition[1] - hrana[1])
+                najbliza = hrana
+        #print(najbliza)
+
+
+
+        pq.push(Node(((startPosition,najbliza), "STOP", 0), None), 0)
+        visited = set()
+        while not (pq.isEmpty()):
+
+            trenutni = pq.pop()
+            #print(trenutni.pozicija)
+            if trenutni.pozicija in visited:
+                continue
+            visited.add(trenutni.pozicija)
+
+            if problem.isGoalStateClosestDot(trenutni.pozicija):
+                lista = [trenutni.akcija]
+                temp = trenutni.prethodno
+                while (temp != None):
+                    lista.append(temp.akcija)
+                    temp = temp.prethodno
+                #print("nasaaaaaaaaaaaaaaaaaao")
+                #print(lista[::-1][1:])
+                return lista[::-1][1:]
+            #print(trenutni.pozicija[0])
+            for sukcesor in problem.getSuccessors(trenutni.pozicija[0]):
+                #print("aaaaaaaaaaaaaa")
+
+                n = Node(((sukcesor[0],najbliza),sukcesor[1],sukcesor[2]), trenutni)
+                #print(n.pozicija)
+                #print(n.akcija)
+                #print(n.g)
+                #print(dotsHeuristic(n.pozicija, problem))
+                pq.push(n, n.g + dotsHeuristic(n.pozicija, problem))
+        #print("prazzananan")
+        return []
+        util.raiseNotDefined()
 
 
         "*** YOUR CODE HERE ***"
@@ -109,6 +166,26 @@ class ClosestDotAgent(Agent):
 
     def getAction(self, state):
         return self.findPathToClosestDot(state)[0]
+    
+def dotsHeuristic(state, problem):
+    """
+    Heuristika za CornersProblem koji ste vi definisali iznad.
+
+      state:   Trenutno stanje pretrage
+               (struktura podataka koju izaberete u problemu pretrage)
+
+      problem: Instanca CornersProblem-a instance za ovu tablu.
+
+    Ova funkcija treba da uvek vrati cenu najkrace putanje od nekog stanja do cilja:
+    treba da bude dopustiva
+    """
+    #corners = problem.corners # These are the corner coordinates
+    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    #print("HHHHHHeuristika")
+    #TODO 2: Implementirati heuristicku funkciju
+    #state je koordinate pacmana
+    #print(abs(state[0][0] - state[1][0]) + abs(state[0][1] - state[1][1]))
+    return abs(state[0][0] - state[1][0]) + abs(state[0][1] - state[1][1])
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -135,6 +212,14 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self.startState = gameState.getPacmanPosition(agentIndex)
         self.costFn = lambda x: 1
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
+    
+    def isGoalStateClosestDot(self, state):
+        """
+        The state is Pacman's position. Fill this in with a goal test that will
+        complete the problem definition.
+        """
+
+        return self.food[state[0][0]][state[0][1]]
 
     def isGoalState(self, state):
         """
